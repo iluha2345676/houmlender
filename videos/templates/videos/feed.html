@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Video Feed</h1>
+
+<section class="feed">
+    {% for video in videos %}
+        <div class="feed-video-card">
+            <video controls class="real-video">
+                <source src="{{ video.video_file.url }}">
+                Your browser does not support the video tag.
+            </video>
+
+            <div class="video-info">
+                <h2>{{ video.title }}</h2>
+                <p>{{ video.description }}</p>
+                <p>By @{{ video.author.username }}</p>
+
+                <div class="video-actions">
+                    <form method="post" action="{% url 'like_video' video.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="like-btn">
+                            ❤️ {{ video.likes.count }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p>No videos yet.</p>
+    {% endfor %}
+</section>
+
+{% endblock %}
