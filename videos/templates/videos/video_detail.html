@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="feed">
+    <div class="feed-video-card">
+        <video controls class="real-video">
+            <source src="{{ video.video_file.url }}">
+            Your browser does not support the video tag.
+        </video>
+
+        <div class="video-info">
+            <h2>{{ video.title }}</h2>
+            <p>{{ video.description }}</p>
+            <p><a href="{% url 'user_profile' video.author.id%}" class="author-link">
+                    @{{video.author.username}}
+        </a></p>
+
+            <form method="post" action="{% url 'like_video' video.id %}">
+                {% csrf_token %}
+                <button type="submit" class="like-btn">
+                    ❤️ {{ video.likes.count }}
+                </button>
+            </form>
+
+            <div class="comments">
+                <h4>Comments</h4>
+
+                {% for comment in video.comments.all %}
+                    <div class="comment">
+                        <strong>@{{ comment.user.username }}</strong>
+                        <p>{{ comment.content }}</p>
+                    </div>
+                {% empty %}
+                    <p>No comments</p>
+                {% endfor %}
+
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_comment' video.id %}">
+                        {% csrf_token %}
+
+                        <input
+                            type="text"
+                            name="content"
+                            placeholder="Write comment..."
+                        >
+
+                        <button type="submit">Send</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,35 +1,314 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Гарантовані стилі для відображення сторінки Feed у форматі TikTok -->
+<style>
+    /* Перевизначаємо загальний фон сторінки на темний, щоб не було білого екрана */
+    body {
+        background-color: #0d0d0d !important;
+        color: #ffffff !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+        margin: 0;
+        padding: 0;
+    }
 
-<h1>Video Feed</h1>
+    /* Навігаційна панель на випадок, якщо глобальні стилі не завантажились */
+    .navbar {
+        background-color: rgba(13, 13, 13, 0.95) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    .navbar a {
+        color: #ffffff !important;
+    }
 
-<section class="feed">
-    {% for video in videos %}
-        <div class="feed-video-card">
-            <video controls class="real-video">
-                <source src="{{ video.video_file.url }}">
-                Your browser does not support the video tag.
-            </video>
+    /* Головний контейнер стрічки */
+    .feed-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px 10px;
+        box-sizing: border-box;
+    }
 
-            <div class="video-info">
-                <h2>{{ video.title }}</h2>
-                <p>{{ video.description }}</p>
-                <p>By @{{ video.author.username }}</p>
+    /* Шапка стрічки */
+    .feed-header {
+        text-align: center;
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
 
-                <div class="video-actions">
+    .feed-title {
+        font-size: 32px;
+        font-weight: 800;
+        background: linear-gradient(45deg, #fe2c55, #25f4ee);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        margin: 0;
+    }
+
+    .feed-subtitle {
+        color: #a0a0a0;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+
+    /* Картка відео в стилі TikTok */
+    .feed-video-card {
+        background-color: #181818;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 380px; /* Чіткий вертикальний мобільний формат */
+        box-sizing: border-box;
+    }
+
+    /* Відео плеєр з пропорціями 9:16 */
+    .real-video {
+        width: 100%;
+        aspect-ratio: 9 / 16; /* Вертикальне відео як у TikTok */
+        background-color: #000;
+        object-fit: cover; /* Заповнює контейнер без чорних смуг з боків */
+        display: block;
+        max-height: 560px; /* Обмежуємо висоту на великих екранах */
+    }
+
+    /* Інформаційний блок під відео */
+    .video-info {
+        padding: 16px;
+        background-color: #181818;
+        box-sizing: border-box;
+    }
+
+    .video-info h2 {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 0 0 6px 0;
+        color: #ffffff;
+        text-align: left;
+    }
+
+    .video-desc {
+        font-size: 13.5px;
+        color: #cccccc;
+        margin: 0 0 10px 0;
+        text-align: left;
+        line-height: 1.4;
+    }
+
+    .video-author {
+        font-size: 13px;
+        color: #25f4ee;
+        font-weight: 700;
+        margin: 0 0 12px 0;
+        text-align: left;
+    }
+
+    /* Кнопка лайку */
+    .like-btn {
+        background-color: rgba(254, 44, 85, 0.1);
+        color: #fe2c55;
+        border: 1px solid rgba(254, 44, 85, 0.2);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        margin-bottom: 16px;
+    }
+
+    .like-btn:hover {
+        background-color: #fe2c55;
+        color: #ffffff;
+        transform: scale(1.05);
+    }
+
+    /* Блок коментарів */
+    .comments-section {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 12px;
+        margin-top: 5px;
+    }
+
+    .comments-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #a0a0a0;
+        margin: 0 0 10px 0;
+        text-align: left;
+    }
+
+    /* Список коментарів з внутрішнім скролом */
+    .comments-list {
+        max-height: 150px;
+        overflow-y: auto;
+        margin-bottom: 12px;
+        padding-right: 4px;
+    }
+
+    .comments-list::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .comments-list::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+    }
+
+    /* Картка окремого коментаря */
+    .comment-item {
+        background-color: rgba(255, 255, 255, 0.03);
+        padding: 6px 10px;
+        border-radius: 8px;
+        margin-bottom: 6px;
+        font-size: 12.5px;
+        border-left: 3px solid #25f4ee;
+        text-align: left;
+        line-height: 1.4;
+    }
+
+    .comment-item strong {
+        color: #25f4ee;
+        margin-right: 5px;
+    }
+
+    .comment-item p {
+        margin: 0;
+        color: #ffffff;
+        display: inline;
+    }
+
+    /* Форма коментарів */
+    .comment-form {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .comment-input {
+        flex-grow: 1;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 8px 14px;
+        color: #ffffff;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .comment-input:focus {
+        border-color: #25f4ee;
+    }
+
+    .comment-submit-btn {
+        background-color: #25f4ee;
+        color: #121212;
+        border: none;
+        border-radius: 20px;
+        padding: 0 16px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+
+    .comment-submit-btn:hover {
+        opacity: 0.9;
+    }
+
+    .no-comments {
+        font-size: 12px;
+        color: #a0a0a0;
+        font-style: italic;
+        padding: 5px 0;
+        text-align: left;
+    }
+</style>
+
+<div class="feed-container">
+    <div class="feed-header">
+        <h1 class="feed-title">Ваша стрічка</h1>
+        <p class="feed-subtitle">Найпопулярніші відео спеціально для вас</p>
+
+    </div>
+
+    <section class="feed">
+        {% for video in videos %}
+            <div class="feed-video-card">
+                <!-- Плеєр -->
+                <video controls class="real-video" preload="metadata">
+                    <source src="{{ video.video_file.url }}" type="video/mp4">
+                    Ваш браузер не підтримує відтворення відео.
+                </video>
+
+                <!-- Опис під відео -->
+                <div class="video-info">
+                    <h2>{{ video.title }}</h2>
+                    {% if video.description %}
+                        <p class="video-desc">{{ video.description }}</p>
+                    {% endif %}
+                    <p> <a href="{% url 'user_profile' video.author.id%}" class="author-link">
+                    @{{video.author.username}}
+        </a></p>
+
+                    <!-- Лайки -->
                     <form method="post" action="{% url 'like_video' video.id %}">
                         {% csrf_token %}
                         <button type="submit" class="like-btn">
-                            ❤️ {{ video.likes.count }}
+                            ❤️ <span>{{ video.likes.count }}</span>
                         </button>
                     </form>
+
+                    <!-- Блок коментарів -->
+                    <div class="comments-section">
+                        <h4 class="comments-title">Коментарі</h4>
+
+                        <div class="comments-list">
+                            {% for comment in video.comments.all %}
+                                <div class="comment-item">
+                                    <strong>@{{ comment.user.username }}</strong>
+                                    <p>{{ comment.content }}</p>
+                                </div>
+                            {% empty %}
+                                <p class="no-comments">Коментарів ще немає. Будьте першим!</p>
+                            {% endfor %}
+                        </div>
+
+                        {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'add_comment' video.id %}" class="comment-form">
+                                {% csrf_token %}
+                                <input
+                                    type="text"
+                                    name="content"
+                                    class="comment-input"
+                                    placeholder="Напишіть коментар..."
+                                    required
+                                    autocomplete="off"
+                                >
+                                <button type="submit" class="comment-submit-btn">Надіслати</button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </div>
-    {% empty %}
-        <p>No videos yet.</p>
-    {% endfor %}
-</section>
-
+        {% empty %}
+            <p style="color: #a0a0a0; text-align: center; margin-top: 40px;">Відео ще немає.</p>
+        {% endfor %}
+    </section>
+</div>
 {% endblock %}

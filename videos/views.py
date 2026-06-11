@@ -1,14 +1,15 @@
+from django.db.models import Model
 from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
-from .forms import VideoForm
+from .forms import VideoForm, CommentForm
 from .models import Video, Like
 
 
 def feed_view(request):
     videos = Video.objects.all().order_by('-created_at')
 
-    return render(request,'videos.html',{'videos':videos})
+    return render(request,'videos/feed.html',{'videos':videos})
 
 @login_required
 def upload_video_view(request):
@@ -20,16 +21,19 @@ def upload_video_view(request):
             video.author = request.user
             video.save()
 
-            return redirect('/videos/')
+            return redirect('feed')
+
+        else:
+            print(form.errors)
 
     else:
         form = VideoForm()
 
-    return render(request,'videos.html',{'form':form})
+    return render(request,'videos/upload_video.html',{'form':form})
 
 @login_required
-def like_video_view(request):
-    video = get_object_or_404(Video, id=request.POST.get('video_id'))
+def like_video_view(request,video_id):
+    video = get_object_or_404(Video, id=video_id)
 
     like = Like.objects.filter(user=request.user, video=video).first()
 
@@ -40,3 +44,24 @@ def like_video_view(request):
 
 
     return redirect('feed')
+
+@login_required
+def add_comment_view(request,video_id):
+    video = get_object_or_404(Video, id=video_id)
+
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.video = video
+
+            comment.save()
+
+    return redirect('feed')
+
+def video_detail_view(request,video_id):
+    video = get_object_or_404(Video, id=video_id)
+
+    return render(request,'videos/video_detail.html',{'video':video})

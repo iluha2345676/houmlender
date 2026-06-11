@@ -1,167 +1,261 @@
+:Оновлений Home HTML з правильним посиланням:home.html
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<!-- Полотно для сузір'я -->
+<!-- Полотно для сузір'я (інтерактивний фон) -->
 <canvas id="stars-canvas"></canvas>
 
-<!-- Всі стилі прямо тут, щоб уникнути білого екрана -->
-<style>
-    body {
-        background-color: #0d0d0d !important;
-        margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        overflow-x: hidden;
-    }
+<div class="hero-container">
+    <div class="hero-content">
+        <h1 class="hero-title">Ласкаво просимо до <span class="brand-gradient">MiniTok</span></h1>
+        <p class="hero-subtitle">Сучасна платформа для коротких відео, створена на Django. Дивись, створюй та ділися з друзями!</p>
 
+        <div class="hero-actions">
+            <a href="{% url 'feed' %}" class="btn-primary-neon">🌟 Перейти до стрічки</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'upload' %}" class="btn-secondary-neon">📤 Завантажити відео</a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn-secondary-neon">🚀 Зареєструватися</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Інформаційні картки про проєкт -->
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🎬</div>
+            <h3>Вертикальний формат</h3>
+            <p>Відео адаптовані під формат мобільних екранів 9:16 — все як у справжньому TikTok.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <h3>Коментарі та Лайки</h3>
+            <p>Ділися враженнями під відеороликами та підтримуй авторів своїми лайками.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Django Power</h3>
+            <p>Швидка та надійна робота серверної частини на базі передового Python-фреймворку.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Додаткові стилі виключно для унікальних елементів Home сторінки -->
+<style>
     #stars-canvas {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1; /* Фон позаду всього */
-        pointer-events: none;
+        width: 100vw;
+        height: 100vh;
+        z-index: 0; /* Фон за текстом */
+        pointer-events: none; /* Пропускає кліки крізь себе */
     }
 
-    /* Навігація */
-    nav {
-        background-color: rgba(0, 0, 0, 0.8) !important;
-        backdrop-filter: blur(10px);
-        padding: 15px 30px;
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        gap: 20px;
-        border-bottom: 1px solid #1a1a1a;
+    .hero-container {
         position: relative;
-        z-index: 10;
+        z-index: 1; /* Поверх канвасу */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        text-align: center;
     }
 
-    nav a {
+    .hero-content {
+        max-width: 650px;
+        margin-bottom: 60px;
+    }
+
+    .hero-title {
+        font-size: 48px;
+        font-weight: 900;
+        line-height: 1.2;
+        margin-bottom: 20px;
+        letter-spacing: -1px;
+    }
+
+    .brand-gradient {
+        background: linear-gradient(45deg, #fe2c55, #25f4ee);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+        font-size: 18px;
+        color: #a0a0a0;
+        line-height: 1.6;
+        margin-bottom: 35px;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    /* Стильні неонові кнопки */
+    .btn-primary-neon {
+        background: linear-gradient(45deg, #fe2c55, #fe2c75);
         color: #ffffff;
         text-decoration: none;
-        font-weight: 600;
-        font-size: 15px;
-        transition: color 0.3s ease;
-        padding: 5px 10px;
+        padding: 14px 28px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 16px;
+        box-shadow: 0 4px 15px rgba(254, 44, 85, 0.4);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    nav a:hover { color: #fe2c55; }
-
-    nav a:first-child {
-        font-size: 20px;
-        font-weight: bold;
-        background: linear-gradient(45deg, #fe2c55, #25f4ee);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-right: auto;
+    .btn-primary-neon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(254, 44, 85, 0.6);
     }
 
-    hr { display: none; }
+    .btn-secondary-neon {
+        background: transparent;
+        color: #ffffff;
+        text-decoration: none;
+        padding: 13px 27px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 16px;
+        border: 2px solid #25f4ee;
+        box-shadow: 0 4px 15px rgba(37, 244, 238, 0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
 
-    /* Картка */
-    .home-container {
-        position: relative;
-        z-index: 5;
-        max-width: 500px;
-        margin: 100px auto;
-        padding: 30px;
-        background-color: rgba(30, 30, 30, 0.85);
-        backdrop-filter: blur(15px);
+    .btn-secondary-neon:hover {
+        transform: translateY(-2px);
+        background-color: rgba(37, 244, 238, 0.1);
+        box-shadow: 0 6px 20px rgba(37, 244, 238, 0.3);
+    }
+
+    /* Сітка фіч */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .feature-card {
+        background: rgba(30, 30, 30, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+        padding: 30px 20px;
+        backdrop-filter: blur(8px);
+        transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(37, 244, 238, 0.4);
+    }
+
+    .feature-icon {
+        font-size: 36px;
+        margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 10px;
         color: #ffffff;
     }
 
-    .home-container h1 {
-        font-size: 28px;
-        margin-bottom: 8px;
-        background: linear-gradient(45deg, #fe2c55, #25f4ee);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .home-container p { font-size: 14px; color: #cccccc; margin-bottom: 25px; }
-    .home-container h2 { font-size: 18px; margin-top: 25px; color: #25f4ee; border-left: 4px solid #fe2c55; padding-left: 10px; margin-bottom: 15px; }
-
-    .feature-list { list-style: none; padding: 0; margin: 0; }
-    .feature-list li {
-        background-color: rgba(44, 44, 44, 0.6);
-        margin-bottom: 10px;
-        padding: 12px 15px;
-        border-radius: 8px;
+    .feature-card p {
         font-size: 14px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        transition: transform 0.2s ease, background-color 0.2s ease;
+        color: #a0a0a0;
+        line-height: 1.5;
     }
 
-    .feature-list li:before { content: '+'; color: #fe2c55; margin-right: 10px; font-size: 18px; font-weight: bold; }
-    .feature-list li:hover { transform: translateX(5px); background-color: rgba(56, 56, 56, 0.8); cursor: pointer; }
+    @media (max-width: 600px) {
+        .hero-title {
+            font-size: 32px;
+        }
+        .hero-subtitle {
+            font-size: 15px;
+        }
+        .hero-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        .btn-primary-neon, .btn-secondary-neon {
+            width: 100%;
+            text-align: center;
+        }
+    }
 </style>
 
-<div class="home-container">
-    <h1>Welcome to MiniTok</h1>
-    <p>This is my first TikTok-style project.</p>
-    <h2>What can you do here?</h2>
-    <ul class="feature-list">
-        <li>Watch videos</li>
-        <li>Upload videos</li>
-        <li>Like videos</li>
-        <li>Write comments</li>
-    </ul>
-</div>
-
-<!-- Скрипт взаємодії (точки на своїх місцях і розбігаються) -->
+<!-- Скрипт інтерактивного сузір'я на Canvas -->
 <script>
     const canvas = document.getElementById('stars-canvas');
     const ctx = canvas.getContext('2d');
+
     let particles = [];
-    const particleCount = 150;
-    const mouse = { x: null, y: null, radius: 100 };
+    const particleCount = 85;
 
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; init(); }
-    window.addEventListener('resize', resize);
+    const mouse = {
+        x: null,
+        y: null,
+        radius: 120
+    };
 
-    window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
-    window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+    // Відслідковування руху миші
+    window.addEventListener('mousemove', function(event) {
+        mouse.x = event.clientX;
+        mouse.y = event.clientY;
+    });
+
+    window.addEventListener('mouseout', function() {
+        mouse.x = null;
+        mouse.y = null;
+    });
+
+    // Налаштування розмірів полотна при зміні вікна
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        initParticles();
+    }
+    window.addEventListener('resize', resizeCanvas);
 
     class Particle {
         constructor(x, y) {
             this.x = x;
             this.y = y;
-            this.baseX = x;
-            this.baseY = y;
             this.size = Math.random() * 2 + 1;
-            this.ease = 0.05;
+            this.speedX = (Math.random() - 0.5) * 0.6;
+            this.speedY = (Math.random() - 0.5) * 0.6;
         }
-        update() {
-            if (mouse.x !== null && mouse.y !== null) {
-                let dx = mouse.x - this.x;
-                let dy = mouse.y - this.y;
-                let dist = Math.sqrt(dx * dx + dy * dy);
 
-                if (dist < mouse.radius) {
-                    let force = (mouse.radius - dist) / mouse.radius;
-                    let moveX = (dx / dist) * force * 10;
-                    let moveY = (dy / dist) * force * 10;
-                    this.x -= moveX;
-                    this.y -= moveY;
-                } else {
-                    this.x += (this.baseX - this.x) * this.ease;
-                    this.y += (this.baseY - this.y) * this.ease;
-                }
-            } else {
-                this.x += (this.baseX - this.x) * this.ease;
-                this.y += (this.baseY - this.y) * this.ease;
-            }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            // Відскок від меж вікна
+            if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+            if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
         }
-        draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = '#25f4ee'; ctx.fill(); }
+
+        draw() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
-    function init() {
+    function initParticles() {
         particles = [];
         for (let i = 0; i < particleCount; i++) {
             let x = Math.random() * canvas.width;
@@ -169,36 +263,56 @@
             particles.push(new Particle(x, y));
         }
     }
-    init();
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
         for (let i = 0; i < particles.length; i++) {
             particles[i].update();
             particles[i].draw();
+
+            // Зв'язування лініями сусідніх зірок
             for (let j = i + 1; j < particles.length; j++) {
                 let dx = particles[i].x - particles[j].x;
                 let dy = particles[i].y - particles[j].y;
                 let dist = Math.sqrt(dx * dx + dy * dy);
 
-                if (dist < 60 && mouse.x !== null) {
-                    let dxM = mouse.x - particles[i].x;
-                    let dyM = mouse.y - particles[i].y;
-                    let distM = Math.sqrt(dxM * dxM + dyM * dyM);
+                if (dist < 90) {
+                    ctx.beginPath();
+                    // Градієнтний вигляд ліній між червоним та бірюзовим
+                    ctx.strokeStyle = `rgba(37, 244, 238, ${1 - dist / 90})`;
+                    ctx.lineWidth = 0.4;
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.stroke();
+                }
+            }
 
-                    if (distM < mouse.radius) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(254, 44, 85, ${1 - dist / 60})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
+            // Інтерактивна взаємодія зірок з мишкою
+            if (mouse.x !== null && mouse.y !== null) {
+                let dxM = mouse.x - particles[i].x;
+                let dyM = mouse.y - particles[i].y;
+                let distM = Math.sqrt(dxM * dxM + dyM * dyM);
+
+                if (distM < mouse.radius) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(254, 44, 85, ${1 - distM / mouse.radius})`;
+                    ctx.lineWidth = 0.6;
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.stroke();
                 }
             }
         }
         requestAnimationFrame(animate);
     }
-    animate();
+
+    // Запуск після завантаження сторінки
+    window.onload = function() {
+        resizeCanvas();
+        animate();
+    };
 </script>
 {% endblock %}
+```eof
+

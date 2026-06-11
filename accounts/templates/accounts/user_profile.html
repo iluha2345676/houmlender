@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="profile-page">
+
+    <div class="profile-card">
+
+        <div class="avatar-circle">
+            {{ profile_user.username|first|upper }}
+        </div>
+        <div>
+
+    <p>
+
+        Followers:
+        {{ profile_user.followers.count }}
+
+    </p>
+
+    <p>
+
+        Following:
+        {{ profile_user.following.count }}
+
+    </p>
+
+</div>
+
+
+{% if user.is_authenticated and user != profile_user %}
+
+<form
+    method="post"
+    action="{% url 'follow' profile_user.id %}"
+>
+
+{% csrf_token %}
+
+<button
+    class="btn primary"
+>
+
+{% if is_following %}
+
+Unfollow
+
+{% else %}
+
+Follow
+
+{% endif %}
+
+</button>
+
+</form>
+
+{% endif %}
+
+
+        <h1>
+            @{{ profile_user.username }}
+        </h1>
+
+        {% if user.is_authenticated and user.id != profile_user.id %}
+
+            <a
+                href="{% url 'chat_detail' profile_user.id %}"
+                class="btn primary"
+            >
+                Message
+            </a>
+
+        {% endif %}
+
+        {% if profile.bio %}
+
+            <p>
+                {{ profile.bio }}
+            </p>
+
+        {% else %}
+
+            <p>
+                This user has not written a bio yet.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+
+<h2 class="section-title">
+
+    Videos by @{{ profile_user.username }}
+
+</h2>
+
+
+<section class="feed">
+
+    {% for video in videos %}
+
+        <div class="feed-video-card">
+
+            <video controls class="real-video">
+
+                <source src="{{ video.video_file.url }}">
+
+                Your browser does not support video.
+
+            </video>
+
+            <div class="video-info">
+
+                <h2>
+
+                    {{ video.title }}
+
+                </h2>
+
+                <a
+                    href="{% url 'video_detail' video.id %}"
+                    class="details-link"
+                >
+
+                    Open video
+
+                </a>
+
+                <p>
+
+                    {{ video.description }}
+
+                </p>
+
+                <p>
+
+                    ❤️ {{ video.likes.count }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <p>
+
+            No videos yet.
+
+        </p>
+
+    {% endfor %}
+
+</section>
+
+{% endblock %}
