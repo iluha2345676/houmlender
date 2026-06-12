@@ -11,7 +11,7 @@ def chat_detail_view(request,user_id):
     other_user = get_object_or_404(User,id=user_id)
 
 
-    message = Message.objects.filter(Q(sender=request.user, receiver=other_user) | Q(receiver=other_user,receive=request.user))
+    message = Message.objects.filter(Q(sender=request.user, recipient=other_user) | Q(sender=other_user,recipient=request.user))
 
     if request.method == 'POST':
         form = MessageForm(request.POST)
