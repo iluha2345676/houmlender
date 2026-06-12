@@ -25,5 +25,4 @@ def chat_detail_view(request,user_id):
 
         else:
             form = MessageForm()
-
-            return render(request,'chat/chat_detail.html',{'form':form,'message':message,'other_user':other_user})
+    return render(request,'chat/chat_detail.html',{'form':form,'message':message,'other_user':other_user})
