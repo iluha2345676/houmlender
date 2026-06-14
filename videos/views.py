@@ -1,7 +1,7 @@
 from django.db.models import Model
 from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-
+from django.contrib import messages
 from .forms import VideoForm, CommentForm
 from .models import Video, Like
 
@@ -65,3 +65,16 @@ def video_detail_view(request,video_id):
     video = get_object_or_404(Video, id=video_id)
 
     return render(request,'videos/video_detail.html',{'video':video})
+
+@login_required
+def delete_video_view(request,video_id):
+    video = get_object_or_404(Video, id=video_id)
+
+    if video.author != request.user:
+        return redirect('feed')
+
+    if request.method == 'POST':
+        video.delete()
+        return redirect('feed')
+
+    return redirect('video_detail',video_id=video_id)

@@ -9,12 +9,21 @@
             Your browser does not support the video tag.
         </video>
 
+
         <div class="video-info">
             <h2>{{ video.title }}</h2>
             <p>{{ video.description }}</p>
             <p><a href="{% url 'user_profile' video.author.id%}" class="author-link">
                     @{{video.author.username}}
         </a></p>
+            {% if user == video.author %}
+                <form method="post" action="{% url 'delete_video' video.id %}" >
+                    {% csrf_token %}
+                    <button type="submit" class="delete-btn"
+                            Delete video
+                    </button>
+                </form>
+            {% endif %}
 
             <form method="post" action="{% url 'like_video' video.id %}">
                 {% csrf_token %}
