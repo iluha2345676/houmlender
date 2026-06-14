@@ -11,18 +11,18 @@ def chat_detail_view(request,user_id):
     other_user = get_object_or_404(User,id=user_id)
 
 
-    message = Message.objects.filter(Q(sender=request.user, recipient=other_user) | Q(sender=other_user,recipient=request.user))
+    messages = Message.objects.filter(Q(sender=request.user, recipient=other_user) | Q(sender=other_user,recipient=request.user)).order_by('created_at')
 
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
-            message = form.save(commit=False)
-            message.sender = request.user
-            message.receiver = other_user
-            message.save()
+            messages = form.save(commit=False)
+            messages.sender = request.user
+            messages.recipient = other_user
+            messages.save()
 
             return redirect('chat_detail',user_id=other_user.id)
 
-        else:
-            form = MessageForm()
-    return render(request,'chat/chat_detail.html',{'form':form,'message':message,'other_user':other_user})
+    else:
+        form = MessageForm()
+    return render(request,'chat/chat_detail.html',{'form':form,'messages':messages,'other_user':other_user})
